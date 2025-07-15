@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>🔥 Proxy Launcher</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      background: #121212;
+      color: #eee;
+      font-family: sans-serif;
+      text-align: center;
+      padding-top: 10vh;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+    input, button {
+      width: 80%;
+      max-width: 450px;
+      padding: 12px;
+      margin: 8px 0;
+      background: #1e1e1e;
+      border: none;
+      border-radius: 5px;
+      color: #fff;
+      font-size: 1rem;
+    }
+    button {
+      background: #2a2a2a;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #333;
+    }
+    #status {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌐 Open Website Through a Proxy</h1>
+  <input id="urlInput" placeholder="https://example.com" />
+  <button id="launchBtn">Launch via Proxy</button>
+  <div id="status"></div>
+
+  <script>
+    const urlInput = document.getElementById('urlInput');
+    const launchBtn = document.getElementById('launchBtn');
+    const statusDiv = document.getElementById('status');
+
+    // Multiple public proxies (GET-based)
+    const proxies = [
+      u => `https://www.croxyproxy.com/?url=${encodeURIComponent(u)}`,
+      u => `https://4everproxy.com/browse.php?u=${encodeURIComponent(u)}&b=4`,
+      u => `https://proxysite.com/go.php?u=${encodeURIComponent(u)}&b=4`,
+      u => `https://anonymouse.org/cgi-bin/anon-www.cgi/${encodeURIComponent(u)}`,
+      u => `https://hide.me/en/proxy?u=${encodeURIComponent(u)}`,
+      u => `https://kproxy.com/?q=${encodeURIComponent(u)}`,
+      u => `https://www.webproxy.net/?url=${encodeURIComponent(u)}`,
+      u => `https://proxy.webshare.io/browser?u=${encodeURIComponent(u)}`,
+      u => `https://www.hidester.com/proxy/?q=${encodeURIComponent(u)}`,
+      u => `https://free-proxy.babymanga.com/proxy?u=${encodeURIComponent(u)}`
+    ];
+
+    async function testProxy(proxyUrl, timeout = 5000) {
+      try {
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), timeout);
+        const res = await fetch(proxyUrl, {
+          method: 'HEAD',
+          signal: controller.signal,
+          mode: 'no-cors'
+        });
+        return true; // if fetch doesn't throw, we assume it's usable
+      } catch {
+        return false;
+      }
+    }
+
+    launchBtn.addEventListener('click', async () => {
+      const raw = urlInput.value.trim();
+      if (!/^https?:\/\//.test(raw)) {
+        statusDiv.textContent = '⚠️ Enter a full URL (starting with http:// or https://)';
+        return;
+      }
+
+      statusDiv.textContent = '🔍 Checking available proxies…';
+      launchBtn.disabled = true;
+
+      for (const fn of proxies) {
+        const pUrl = fn(raw);
+        statusDiv.textContent = `🧪 Trying: ${pUrl.split('?')[0]}...`;
+
+        if (await testProxy(pUrl, 3000)) {
+          statusDiv.textContent = '✅ Proxy found! Launching...';
+          window.open(pUrl, '_blank');
+          launchBtn.disabled = false;
+          return;
+        }
+      }
+
+      statusDiv.textContent = '❌ All proxy attempts failed.';
+      launchBtn.disabled = false;
+    });
+  </script>
+</body>
+</html>
