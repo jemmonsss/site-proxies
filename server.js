@@ -1,27 +1,38 @@
-const express = require('express');
-const cors = require('cors');
-const fetch = require('node-fetch');
+const launchBtn = document.getElementById('launchBtn');
+const statusDiv = document.getElementById('status');
+const urlInput = document.getElementById('urlInput');
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+launchBtn.onclick = async () => {
+  const raw = urlInput.value.trim();
 
-app.use(cors());
-
-app.get('/proxy', async (req, res) => {
-  const targetUrl = req.query.url;
-  if (!targetUrl || !/^https?:\/\//.test(targetUrl)) {
-    return res.status(400).json({ error: 'Invalid URL' });
+  if (!/^https?:\/\//.test(raw)) {
+    statusDiv.textContent = '⚠️ Please enter a valid URL starting with http:// or https://';
+    return;
   }
+
+  statusDiv.textContent = '🔄 Connecting to proxy...';
 
   try {
-    const proxyRes = await fetch(targetUrl);
-    const contentType = proxyRes.headers.get('content-type') || 'text/plain';
-    res.setHeader('content-type', contentType);
-    const body = await proxyRes.text();
-    res.send(body);
-  } catch (err) {
-    res.status(500).json({ error: 'Proxy failed', details: err.message });
-  }
-});
+    const res = await fetch('https://site-proxies.onrender.com/proxy?url=' + encodeURIComponent(raw));
 
-app.listen(PORT, () => console.log(`✅ Proxy server running on port ${PORT}`));
+    if (!res.ok) {
+      const error = await res.json();
+      statusDiv.textContent = `❌ Blocked or Failed: ${error.error || 'Unknown error.'}`;
+      return;
+    }
+
+    const content = await res.text();
+
+    const win = window.open();
+    if (win) {
+      win.document.open();
+      win.document.write(content);
+      win.document.close();
+    } else {
+      statusDiv.textContent = '❌ Pop-up blocked. Please allow pop-ups.';
+    }
+  } catch (err) {
+    statusDiv.textContent = '❌ Network error. Check console for details.';
+    console.error(err);
+  }
+};
