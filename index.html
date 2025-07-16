@@ -2,20 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Proxy Launcher</title>
+  <title>J_emmons_07 Proxy Launcher</title>
   <style>
-    body { background: #111; color: #eee; font-family: sans-serif; text-align: center; padding-top: 10vh; }
-    input, button {
-      padding: 12px; width: 80%; max-width: 450px; margin: 8px;
-      background: #222; border: none; border-radius: 5px; color: white; font-size: 1rem;
+    body {
+      background: #111;
+      color: #eee;
+      font-family: sans-serif;
+      text-align: center;
+      padding-top: 10vh;
     }
-    button { cursor: pointer; background: #333; }
-    button:hover { background: #444; }
-    #status { margin-top: 1em; color: #ccc; }
+    input, button {
+      padding: 12px;
+      width: 80%;
+      max-width: 450px;
+      margin: 8px;
+      background: #222;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-size: 1rem;
+    }
+    button {
+      cursor: pointer;
+      background: #333;
+    }
+    button:hover {
+      background: #444;
+    }
+    #status {
+      margin-top: 1em;
+      color: #ccc;
+    }
   </style>
 </head>
 <body>
-  <h1>🌐 Proxy Redirect</h1>
+  <h1>🌐 J_emmons_07 Proxy Redirect</h1>
   <input id="urlInput" placeholder="https://example.com" />
   <button id="launchBtn">Launch via Proxy</button>
   <div id="status"></div>
@@ -32,12 +53,21 @@
         return;
       }
 
-      statusDiv.textContent = 'Connecting to proxy...';
+      statusDiv.textContent = '🔄 Connecting to proxy...';
 
       try {
-        const res = await fetch('https://your-render-url.onrender.com/api/launch?url=' + encodeURIComponent(raw));
-        const { proxyUrl } = await res.json();
-        window.location.href = proxyUrl;
+        const res = await fetch('https://site-proxies.onrender.com/proxy?url=' + encodeURIComponent(raw));
+        const content = await res.text();
+
+        // Open the proxied page in a new tab
+        const win = window.open();
+        if (win) {
+          win.document.open();
+          win.document.write(content);
+          win.document.close();
+        } else {
+          statusDiv.textContent = '❌ Pop-up blocked. Please allow pop-ups.';
+        }
       } catch (err) {
         statusDiv.textContent = '❌ Failed to launch via proxy.';
         console.error(err);

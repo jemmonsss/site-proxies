@@ -1,23 +1,27 @@
-// server.js
 const express = require('express');
 const cors = require('cors');
+const fetch = require('node-fetch');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 
-const proxies = [
-  u => `https://4everproxy.com/browse.php?u=${encodeURIComponent(u)}&b=4`,
-  u => `https://proxysite.com/go.php?u=${encodeURIComponent(u)}&b=4`
-];
-
-app.get('/api/launch', (req, res) => {
-  const { url } = req.query;
-  if (!url || !/^https?:\/\//.test(url)) {
+app.get('/proxy', async (req, res) => {
+  const targetUrl = req.query.url;
+  if (!targetUrl || !/^https?:\/\//.test(targetUrl)) {
     return res.status(400).json({ error: 'Invalid URL' });
   }
-  const proxyUrl = proxies[Math.floor(Math.random() * proxies.length)](url);
-  res.json({ proxyUrl });
+
+  try {
+    const proxyRes = await fetch(targetUrl);
+    const contentType = proxyRes.headers.get('content-type') || 'text/plain';
+    res.setHeader('content-type', contentType);
+    const body = await proxyRes.text();
+    res.send(body);
+  } catch (err) {
+    res.status(500).json({ error: 'Proxy failed', details: err.message });
+  }
 });
 
-app.listen(PORT, () => console.log(`Proxy API running on port ${PORT}`));
+app.listen(PORT, () => console.log(`✅ Proxy server running on port ${PORT}`));
