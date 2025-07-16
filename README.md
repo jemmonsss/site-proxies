@@ -21,6 +21,7 @@ You can use the public proxy launcher at:
 
 👉 **[jemmonsss.github.io/site-proxies](https://jemmonsss.github.io/site-proxies/)**
 
+It may take a bit to load as [Render](https://render.com) Sleeps free projects after a while just try using it and it will automatically re-launch the proxy.
 This GitHub Pages site connects to the hosted Render backend and lets you paste a URL to launch through the secure proxy.
 
 ---
