@@ -14,6 +14,17 @@ This is a secure, customizable Node.js proxy server designed to relay website co
 
 ---
 
+## 🌐 Try It Online
+
+Looking for a pre-hosted version?  
+You can use the public proxy launcher at:
+
+👉 **[jemmonsss.github.io/site-proxies](https://jemmonsss.github.io/site-proxies/)**
+
+This GitHub Pages site connects to the hosted Render backend and lets you paste a URL to launch through the secure proxy.
+
+---
+
 ## 📁 Project Structure
 
 ```
