@@ -1,0 +1,6 @@
+services:
+  - type: static
+    name: proxy-launcher
+    env: static
+    buildCommand: ""
+    staticPublishPath: public

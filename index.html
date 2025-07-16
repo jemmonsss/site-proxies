@@ -2,66 +2,47 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Direct Proxy Launcher</title>
+  <title>Proxy Launcher</title>
   <style>
-    body {
-      background: #111;
-      color: #eee;
-      font-family: sans-serif;
-      text-align: center;
-      padding-top: 10vh;
-    }
+    body { background: #111; color: #eee; font-family: sans-serif; text-align: center; padding-top: 10vh; }
     input, button {
-      padding: 12px;
-      width: 80%;
-      max-width: 450px;
-      margin: 8px;
-      background: #222;
-      border: none;
-      border-radius: 5px;
-      color: white;
-      font-size: 1rem;
+      padding: 12px; width: 80%; max-width: 450px; margin: 8px;
+      background: #222; border: none; border-radius: 5px; color: white; font-size: 1rem;
     }
-    button {
-      cursor: pointer;
-      background: #333;
-    }
-    button:hover {
-      background: #444;
-    }
-    #status {
-      margin-top: 1em;
-      color: #ccc;
-    }
+    button { cursor: pointer; background: #333; }
+    button:hover { background: #444; }
+    #status { margin-top: 1em; color: #ccc; }
   </style>
 </head>
 <body>
-  <h1>🌐 Launch Website via Proxy</h1>
+  <h1>🌐 Proxy Redirect</h1>
   <input id="urlInput" placeholder="https://example.com" />
-  <button id="launchBtn">Launch Now</button>
+  <button id="launchBtn">Launch via Proxy</button>
   <div id="status"></div>
 
   <script>
-    const urlInput = document.getElementById('urlInput');
     const launchBtn = document.getElementById('launchBtn');
     const statusDiv = document.getElementById('status');
+    const urlInput = document.getElementById('urlInput');
 
-    const proxies = [
-      u => `https://4everproxy.com/browse.php?u=${encodeURIComponent(u)}&b=4`,
-      u => `https://proxysite.com/go.php?u=${encodeURIComponent(u)}&b=4`
-    ];
-
-    launchBtn.addEventListener('click', () => {
+    launchBtn.onclick = async () => {
       const raw = urlInput.value.trim();
       if (!/^https?:\/\//.test(raw)) {
         statusDiv.textContent = '⚠️ Please enter a valid URL starting with http:// or https://';
         return;
       }
 
-      statusDiv.textContent = 'Launching via proxy...';
-      const proxyUrl = proxies[Math.floor(Math.random() * proxies.length)](raw);
-      window.location.href = proxyUrl;
-    });
+      statusDiv.textContent = 'Connecting to proxy...';
+
+      try {
+        const res = await fetch('https://your-render-url.onrender.com/api/launch?url=' + encodeURIComponent(raw));
+        const { proxyUrl } = await res.json();
+        window.location.href = proxyUrl;
+      } catch (err) {
+        statusDiv.textContent = '❌ Failed to launch via proxy.';
+        console.error(err);
+      }
+    };
   </script>
 </body>
 </html>
