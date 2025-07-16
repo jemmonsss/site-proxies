@@ -1,38 +1,50 @@
-const launchBtn = document.getElementById('launchBtn');
-const statusDiv = document.getElementById('status');
-const urlInput = document.getElementById('urlInput');
+const express = require('express');
+const cors = require('cors');
+const fetch = require('node-fetch');
+const url = require('url');
+const BLOCKED = require('./blocklist');
+const sanitizeHtmlSafely = require('./sanitizeHtmlSafely'); // ← add this
 
-launchBtn.onclick = async () => {
-  const raw = urlInput.value.trim();
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-  if (!/^https?:\/\//.test(raw)) {
-    statusDiv.textContent = '⚠️ Please enter a valid URL starting with http:// or https://';
-    return;
+app.use(cors());
+
+function isBlocked(targetUrl) {
+  const parsed = url.parse(targetUrl);
+  const hostname = parsed.hostname || '';
+  const fullUrl = targetUrl.toLowerCase();
+  return BLOCKED.some(term =>
+    hostname.includes(term) || fullUrl.includes(term)
+  );
+}
+
+app.get('/proxy', async (req, res) => {
+  const targetUrl = req.query.url;
+  if (!targetUrl || !/^https?:\/\//.test(targetUrl)) {
+    return res.status(400).json({ error: 'Invalid URL format' });
   }
 
-  statusDiv.textContent = '🔄 Connecting to proxy...';
+  if (isBlocked(targetUrl)) {
+    return res.status(403).json({ error: 'This domain is blocked.' });
+  }
 
   try {
-    const res = await fetch('https://site-proxies.onrender.com/proxy?url=' + encodeURIComponent(raw));
+    const proxyRes = await fetch(targetUrl);
+    const contentType = proxyRes.headers.get('content-type') || '';
 
-    if (!res.ok) {
-      const error = await res.json();
-      statusDiv.textContent = `❌ Blocked or Failed: ${error.error || 'Unknown error.'}`;
-      return;
+    if (!contentType.includes('text/html')) {
+      return res.status(415).send('Only HTML pages can be proxied.');
     }
 
-    const content = await res.text();
+    const rawHtml = await proxyRes.text();
 
-    const win = window.open();
-    if (win) {
-      win.document.open();
-      win.document.write(content);
-      win.document.close();
-    } else {
-      statusDiv.textContent = '❌ Pop-up blocked. Please allow pop-ups.';
-    }
+    const cleaned = sanitizeHtmlSafely(rawHtml); // ✨ selectively cleaned
+    res.setHeader('Content-Type', 'text/html');
+    res.send(cleaned);
   } catch (err) {
-    statusDiv.textContent = '❌ Network error. Check console for details.';
-    console.error(err);
+    res.status(500).json({ error: 'Proxy fetch failed', details: err.message });
   }
-};
+});
+
+app.listen(PORT, () => console.log(`✅ Proxy running on port ${PORT}`));
